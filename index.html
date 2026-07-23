@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Feria - Atrapa al Topo Pro</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #panel-superior {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px 10px;
+            background: #0f172a;
+            box-sizing: border-box;
+            border-bottom: 3px solid #334155;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .caja-info {
+            background: #334155;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 2px solid #475569;
+        }
+        #timer { color: #38bdf8; }
+        #puntos { color: #f59e0b; }
+
+        #pantalla-inicio, #pantalla-fin {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #pantalla-fin { display: none; }
+
+        #tablero {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 90%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            margin: auto;
+        }
+
+        .hueco {
+            background: #334155;
+            border-radius: 50%;
+            border: 4px solid #475569;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: inset 0 10px 15px rgba(0,0,0,0.5);
+            touch-action: manipulation;
+        }
+
+        .personaje {
+            font-size: 50px;
+            position: absolute;
+            bottom: -60px;
+            transition: bottom 0.12s ease-out;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .hueco.activo .personaje {
+            bottom: 10px;
+        }
+
+        .btn-principal {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            touch-action: manipulation;
+            margin-top: 15px;
+        }
+        .btn-principal:active { transform: scale(0.95); }
+
+        .animacion-puntos {
+            position: absolute;
+            font-weight: bold;
+            font-size: 24px;
+            animation: flotarArriba 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 50;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        @keyframes flotarArriba {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pantalla-inicio">
+        <h1 style="color: #38bdf8; margin-bottom: 10px;">🔨 Atrapa al Topo (Feria)</h1>
+        <p style="color: #cbd5e1; max-width: 320px; font-size: 15px; margin-bottom: 25px;">
+            Tienes <b>5 minutos</b>. ¡Sale un personaje <b>cada 1.5 segundos</b>! Golpea topos 🐹 (+50 pts) y evita conejos 🐰 (-50 pts).
+        </p>
+        <button class="btn-principal" onclick="comenzarJuego()">Comenzar Juego</button>
+    </div>
+
+    <div id="pantalla-fin">
+        <h2 style="color: #f59e0b; font-size: 30px; margin-bottom: 10px;">¡Tiempo Finalizado!</h2>
+        <p style="font-size: 18px; color: #cbd5e1; margin-bottom: 15px;">Tu puntuación total obtenida es:</p>
+        <div id="puntaje-final" style="font-size: 45px; color: #38bdf8; font-weight: bold; margin-bottom: 25px;">0</div>
+        <button class="btn-principal" onclick="location.reload()">Jugar de Nuevo</button>
+    </div>
+
+    <div id="panel-superior">
+        <div class="caja-info">⏱️ <span id="timer">05:00</span></div>
+        <div class="caja-info">🏆 <span id="puntos">0</span> pts</div>
+    </div>
+
+    <div id="tablero">
+        <div class="hueco" onclick="golpearHueco(0)"><div class="personaje" id="p0"></div></div>
+        <div class="hueco" onclick="golpearHueco(1)"><div class="personaje" id="p1"></div></div>
+        <div class="hueco" onclick="golpearHueco(2)"><div class="personaje" id="p2"></div></div>
+        <div class="hueco" onclick="golpearHueco(3)"><div class="personaje" id="p3"></div></div>
+        <div class="hueco" onclick="golpearHueco(4)"><div class="personaje" id="p4"></div></div>
+        <div class="hueco" onclick="golpearHueco(5)"><div class="personaje" id="p5"></div></div>
+        <div class="hueco" onclick="golpearHueco(6)"><div class="personaje" id="p6"></div></div>
+        <div class="hueco" onclick="golpearHueco(7)"><div class="personaje" id="p7"></div></div>
+        <div class="hueco" onclick="golpearHueco(8)"><div class="personaje" id="p8"></div></div>
+    </div>
+
+    <script>
+        let puntos = 0;
+        let tiempoRestante = 300;
+        let juegoActivo = false;
+        let intervaloTimer = null;
+        let intervaloTopo = null;
+        let estadoHuecos = [null, null, null, null, null, null, null, null, null];
+
+        function comenzarJuego() {
+            document.getElementById('pantalla-inicio').style.display = 'none';
+            juegoActivo = true;
+            iniciarReloj();
+            // Intervalo cambiado a 1500 milisegundos (1.5 segundos)
+            intervaloTopo = setInterval(aparecerPersonaje, 1500);
+            aparecerPersonaje();
+        }
+
+        function iniciarReloj() {
+            intervaloTimer = setInterval(() => {
+                tiempoRestante--;
+                let m = Math.floor(tiempoRestante / 60);
+                let s = tiempoRestante % 60;
+                document.getElementById('timer').innerText = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
+                
+                if (tiempoRestante <= 0) {
+                    finalizarJuego();
+                }
+            }, 1000);
+        }
+
+        function aparecerPersonaje() {
+            if (!juegoActivo) return;
+
+            let huecoAleatorio = Math.floor(Math.random() * 9);
+            
+            if (estadoHuecos[huecoAleatorio] !== null) return;
+
+            let esConejo = Math.random() * 100 < 90;
+            let tipo = esConejo ? 'conejo' : 'topo';
+            let emoji = esConejo ? '🐰' : '🐹';
+
+            estadoHuecos[huecoAleatorio] = tipo;
+            let contenedorHueco = document.getElementById('tablero').children[huecoAleatorio];
+            let elemPersonaje = document.getElementById('p' + huecoAleatorio);
+
+            elemPersonaje.innerText = emoji;
+            contenedorHueco.classList.add('activo');
+
+            setTimeout(() => {
+                if (estadoHuecos[huecoAleatorio] !== null) {
+                    contenedorHueco.classList.remove('activo');
+                    estadoHuecos[huecoAleatorio] = null;
+                }
+            }, 1200); // Se esconde un poco antes de los 1.5s para dar dinamismo
+        }
+
+        function golpearHueco(index) {
+            if (!juegoActivo || estadoHuecos[index] === null) return;
+
+            let contenedorHueco = document.getElementById('tablero').children[index];
+            let tipoActual = estadoHuecos[index];
+
+            estadoHuecos[index] = null;
+            contenedorHueco.classList.remove('activo');
+
+            let rect = contenedorHueco.getBoundingClientRect();
+            let x = rect.left + rect.width / 2;
+            let y = rect.top;
+
+            if (tipoActual === 'topo') {
+                puntos += 50;
+                mostrarAnimacionPuntos("+50", "#10b981", x, y);
+            } else {
+                puntos -= 50;
+                mostrarAnimacionPuntos("-50", "#ef4444", x, y);
+            }
+
+            document.getElementById('puntos').innerText = puntos;
+        }
+
+        function mostrarAnimacionPuntos(texto, color, x, y) {
+            let divAnim = document.createElement('div');
+            divAnim.className = 'animacion-puntos';
+            divAnim.innerText = texto;
+            divAnim.style.color = color;
+            divAnim.style.left = (x - 20) + 'px';
+            divAnim.style.top = y + 'px';
+            document.body.appendChild(divAnim);
+
+            setTimeout(() => {
+                divAnim.remove();
+            }, 800);
+        }
+
+        function finalizarJuego() {
+            juegoActivo = false;
+            clearInterval(intervaloTimer);
+            clearInterval(intervaloTopo);
+
+            for (let i = 0; i < 9; i++) {
+                document.getElementById('tablero').children[i].classList.remove('activo');
+            }
+
+            document.getElementById('puntaje-final').innerText = puntos + " pts";
+            document.getElementById('pantalla-fin').style.display = 'flex';
+        }
+    </script>
+</body>
+  </html>
+  
